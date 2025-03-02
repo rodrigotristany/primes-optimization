@@ -65,6 +65,8 @@ int main() {
     std::cout << "Single thread execution time: " << elapsed.count() << " seconds\n";
 
     std::cout << "\n\nMULTI THREAD" << std::endl;;
+    unsigned int cores = std::thread::hardware_concurrency();
+    std::cout << "Number of hardware threads available: " << cores << std::endl;
 
     // Multi-threaded execution - 10 threads
     start_time = start_timer();
@@ -83,12 +85,7 @@ int main() {
     }
 
     end_time = end_timer();
-
-    // Print first 10 primes (to check correctness)
-    std::cout << "First 10 primes: ";
-    for (size_t i = 0; i < std::min(global_primes.size(), size_t(10)); ++i) {
-        std::cout << global_primes[i] << " ";
-    }
+    
     std::cout << "\nTotal primes found: " << global_primes.size() << std::endl;
     elapsed = end_time - start_time;
     std::cout << "Multi thread execution time: " << elapsed.count() << " seconds\n";
