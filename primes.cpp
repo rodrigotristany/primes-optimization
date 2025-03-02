@@ -5,7 +5,6 @@
 #include <chrono>
 
 std::mutex prime_mutex; // For safely adding primes to the list
-std::vector<int> global_primes;
 
 // Function to check if a number is prime
 bool is_prime(int n) {
@@ -46,7 +45,7 @@ void find_primes_multi_thread(int from, int to, std::vector<int>& primes, std::m
 }
 
 int main() {
-    int limit = 10000000; // Adjust this to test performance
+    int limit = 24000000; // Adjust this to test performance
     std::cout << "Finding primes up to " << limit << "...\n";
     std::cout << "SINGLE THREAD" << "...\n";
 
@@ -69,14 +68,17 @@ int main() {
     std::cout << "Number of hardware threads available: " << cores << std::endl;
 
     // Multi-threaded execution - 10 threads
+    primes.clear();
     start_time = start_timer();
     std::vector<std::thread> threads;
-    int segments = limit / 10;
+    std::vector<std::vector<int>> primes_vector;
+    primes_vector.resize(cores);
+    int segments = limit / cores;
     
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < cores; i++) {
         int from = segments * i + 1;
         int to = segments * (i + 1);
-        threads.push_back(std::thread(find_primes_multi_thread, from, to, std::ref(global_primes), std::ref(prime_mutex)));
+        threads.push_back(std::thread(find_primes_multi_thread, from, to, std::ref(primes_vector[i]), std::ref(prime_mutex)));
     }
 
     // Join all threads
@@ -85,8 +87,20 @@ int main() {
     }
 
     end_time = end_timer();
+
+    std::vector<int> flat_primes;
+    flat_primes.reserve(limit);
+    for (const auto& row : primes_vector) {
+        flat_primes.insert(flat_primes.end(), row.begin(), row.end());
+    }
+
+    // Print first 10 primes (to check correctness)
+    std::cout << "First 10 primes: ";
+    for (size_t i = 0; i < std::min(flat_primes.size(), size_t(10)); ++i) {
+        std::cout << flat_primes[i] << " ";
+    }
     
-    std::cout << "\nTotal primes found: " << global_primes.size() << std::endl;
+    std::cout << "\nTotal primes found: " << flat_primes.size() << std::endl;
     elapsed = end_time - start_time;
     std::cout << "Multi thread execution time: " << elapsed.count() << " seconds\n";
 
