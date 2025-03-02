@@ -2,6 +2,7 @@
 #include <vector>
 #include <thread>
 #include <mutex>
+#include <chrono>
 
 std::mutex prime_mutex; // For safely adding primes to the list
 
@@ -12,6 +13,14 @@ bool is_prime(int n) {
         if (n % i == 0) return false;
     }
     return true;
+}
+
+auto start_timer() {
+    return std::chrono::high_resolution_clock::now();
+}
+
+auto end_timer() {
+    return std::chrono::high_resolution_clock::now();
 }
 
 // Single-threaded prime finder
@@ -32,7 +41,9 @@ int main() {
     std::cout << "Finding primes up to " << limit << "...\n";
 
     // Single-threaded execution
+    auto start_time = start_timer();
     std::vector<int> primes = find_primes_single_thread(limit);
+    auto end_time = end_timer();
 
     // Print first 10 primes (to check correctness)
     std::cout << "First 10 primes: ";
@@ -40,6 +51,8 @@ int main() {
         std::cout << primes[i] << " ";
     }
     std::cout << "\nTotal primes found: " << primes.size() << std::endl;
+    std::chrono::duration<double> elapsed = end_time - start_time;
+    std::cout << "Execution time: " << elapsed.count() << " seconds\n";
 
     return 0;
 }
